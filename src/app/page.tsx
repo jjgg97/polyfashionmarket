@@ -1,19 +1,18 @@
 'use client';
-
-import { Header }          from '@/components/layout/Header';
-import { Ticker }          from '@/components/layout/Ticker';
-import { Footer }          from '@/components/layout/Footer';
-import { HomeView }        from '@/components/markets/HomeView';
-import { MarketDetailView }from '@/components/markets/MarketDetailView';
-import { PortfolioView }   from '@/components/portfolio/PortfolioView';
-import { LeaderboardView } from '@/components/leaderboard/LeaderboardView';
-import { ToastContainer }  from '@/components/ui/ToastContainer';
-import { ErrorBoundary }   from '@/components/ui/ErrorBoundary';
-import { useAppStore }     from '@/stores/useAppStore';
+import { Header }           from '@/components/layout/Header';
+import { Ticker }           from '@/components/layout/Ticker';
+import { Footer }           from '@/components/layout/Footer';
+import { HomeView }         from '@/components/markets/HomeView';
+import { MarketDetailView } from '@/components/markets/MarketDetailView';
+import { PortfolioView }    from '@/components/portfolio/PortfolioView';
+import { LeaderboardView }  from '@/components/leaderboard/LeaderboardView';
+import { ToastContainer }   from '@/components/ui/ToastContainer';
+import { ErrorBoundary }    from '@/components/ui/ErrorBoundary';
+import { AuthModal }        from '@/components/auth/AuthModal';
+import { useAppStore }      from '@/stores/useAppStore';
 
 export default function HomePage() {
-  const { currentView } = useAppStore();
-
+  const { currentView, authModalOpen, authModalTab, closeAuthModal } = useAppStore();
   return (
     <>
       <Header />
@@ -28,6 +27,7 @@ export default function HomePage() {
       </ErrorBoundary>
       <Footer />
       <ToastContainer />
+      <AuthModal isOpen={authModalOpen} onClose={closeAuthModal} defaultTab={authModalTab} />
     </>
   );
 }
