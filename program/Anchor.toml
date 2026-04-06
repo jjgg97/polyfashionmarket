@@ -1,0 +1,19 @@
+[features]
+seeds = false
+skip-lint = false
+
+[programs.devnet]
+poly_fashion_market = "REPLACE_WITH_YOUR_PROGRAM_ID_AFTER_ANCHOR_BUILD"
+
+[programs.mainnet]
+poly_fashion_market = "REPLACE_WITH_MAINNET_PROGRAM_ID"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Mono:wght@400;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #0055FF;
+  --accent-hover: #0044cc;
+  --bg: #050505;
+  --red: #FF4433;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Space Mono', monospace;
+  background-color: var(--bg);
+  color: #FAF9F6;
+  overflow-x: hidden;
+}
+
+/* ─── Selection ──────────────────────────────────────────────────────────────── */
+::selection {
+  background-color: #2563eb;
+  color: white;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #050505; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ─── Wallet Adapter Override ────────────────────────────────────────────────── */
+/* Hide default wallet adapter button — we use our own */
+.wallet-adapter-button-trigger { display: none !important; }
+.wallet-adapter-modal-wrapper {
+  font-family: 'Space Mono', monospace !important;
+}
+.wallet-adapter-modal-title {
+  font-size: 1rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+/* ─── Utilities ──────────────────────────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.img-gradient {
+  background: linear-gradient(to bottom, transparent, rgba(5, 5, 5, 0.9));
+}
+
+.market-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.market-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ─── Number Input: hide spinners ────────────────────────────────────────────── */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] { -moz-appearance: textfield; }
