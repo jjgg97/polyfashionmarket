@@ -1,47 +1,79 @@
 'use client';
 import { useState } from 'react';
 
-type Period = '1D' | '1W' | '1M' | 'ALL';
+interface Props {
+  priceHistory?: { time: number; prob: number }[];
+}
 
-const PATHS: Record<Period, string> = {
-  '1D':  'M0,50 Q10,40 20,60 T40,30 T60,20 T80,40 T100,28',
-  '1W':  'M0,70 Q15,60 25,45 T50,35 T70,50 T85,30 T100,28',
-  '1M':  'M0,80 Q20,70 35,55 T55,40 T75,45 T90,32 T100,28',
-  'ALL': 'M0,90 Q10,80 25,65 T45,50 T65,40 T80,35 T100,28',
-};
-const FILL_PATHS: Record<Period, string> = {
-  '1D':  'M0,100 L0,50 Q10,40 20,60 T40,30 T60,20 T80,40 T100,28 L100,100 Z',
-  '1W':  'M0,100 L0,70 Q15,60 25,45 T50,35 T70,50 T85,30 T100,28 L100,100 Z',
-  '1M':  'M0,100 L0,80 Q20,70 35,55 T55,40 T75,45 T90,32 T100,28 L100,100 Z',
-  'ALL': 'M0,100 L0,90 Q10,80 25,65 T45,50 T65,40 T80,35 T100,28 L100,100 Z',
-};
+export function PriceChart({ priceHistory = [] }: Props) {
+  const [period, setPeriod] = useState<'ALL' | '1H' | '24H'>('ALL');
+  const periods = ['1H', '24H', 'ALL'] as const;
+  const now = Date.now();
+  const filtered = priceHistory.filter(p => {
+    if (period === '1H')  return now - p.time < 3_600_000;
+    if (period === '24H') return now - p.time < 86_400_000;
+    return true;
+  });
+  const hasData = filtered.length > 0;
 
-export function PriceChart() {
-  const [period, setPeriod] = useState<Period>('1M');
-  const periods: Period[] = ['1D', '1W', '1M', 'ALL'];
+  const buildPath = () => {
+    if (filtered.length === 0) return '';
+    return 'M' + filtered.map((p, i) => {
+      const x = filtered.length === 1 ? 50 : (i / (filtered.length - 1)) * 100;
+      const y = 100 - p.prob;
+      return `${x},${y}`;
+    }).join(' L');
+  };
+
+  const buildFill = () => {
+    if (filtered.length === 0) return '';
+    const lastX = filtered.length === 1 ? 50 : 100;
+    return buildPath() + ` L${lastX},100 L0,100 Z`;
+  };
+
+  const latestProb = filtered.length > 0 ? filtered[filtered.length - 1].prob : 50;
 
   return (
-    <div className="w-full h-80 border border-white/10 glass mb-8 relative overflow-hidden">
-      <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none opacity-20">
+    <div className="w-full h-64 border border-white/10 glass mb-8 relative overflow-hidden">
+      <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none opacity-10">
         {[0,1,2,3].map(i => <div key={i} className="border-t border-white border-dashed w-full" />)}
       </div>
-      <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#0055FF" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#0055FF" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path d={FILL_PATHS[period]} fill="url(#chartGradient)" />
-        <path d={PATHS[period]} fill="none" stroke="#0055FF" strokeWidth="2" className="transition-all duration-500" />
-      </svg>
       <div className="absolute left-3 inset-y-3 flex flex-col justify-between pointer-events-none">
-        {['100%','75%','50%','25%','0%'].map(l => <span key={l} className="text-[9px] text-gray-600">{l}</span>)}
+        {['100%','75%','50%','25%','0%'].map(l => <span key={l} className="text-[9px] text-gray-700">{l}</span>)}
       </div>
-      <div className="absolute top-4 right-4 flex gap-1">
+
+      {hasData ? (
+        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="chartGrad" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="#0055FF" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#0055FF" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={buildFill()} fill="url(#chartGrad)" />
+          <path d={buildPath()} fill="none" stroke="#0055FF" strokeWidth="2" />
+          <line x1="0" y1="50" x2="100" y2="50" stroke="#ffffff" strokeWidth="0.3" strokeDasharray="2,2" opacity="0.3" />
+        </svg>
+      ) : (
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <p className="text-gray-700 text-xs uppercase tracking-widest mb-1">No price data yet</p>
+          <p className="text-gray-800 text-[10px]">Chart appears after first trade</p>
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <line x1="0" y1="50" x2="100" y2="50" stroke="#333" strokeWidth="0.5" strokeDasharray="3,3" />
+            <text x="50" y="48" textAnchor="middle" fill="#444" fontSize="4" fontFamily="monospace">50%</text>
+          </svg>
+        </div>
+      )}
+
+      {hasData && (
+        <div className="absolute top-3 left-10 bg-black/80 border border-white/10 px-2 py-1 text-[10px]">
+          {latestProb}% YES
+        </div>
+      )}
+      <div className="absolute top-3 right-3 flex gap-1">
         {periods.map(p => (
           <button key={p} onClick={() => setPeriod(p)}
-            className={`px-2.5 py-1 text-[9px] uppercase transition ${period === p ? 'bg-blue-600 text-white' : 'bg-black/60 border border-gray-700 text-gray-400 hover:text-white'}`}>
+            className={`px-2 py-0.5 text-[9px] uppercase transition ${period === p ? 'bg-blue-600 text-white' : 'bg-black/60 border border-gray-700 text-gray-400 hover:text-white'}`}>
             {p}
           </button>
         ))}
